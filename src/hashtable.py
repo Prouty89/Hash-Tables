@@ -41,6 +41,7 @@ class HashTable:
         within the storage capacity of the hash table.
         '''
         return self._hash(key) % self.capacity
+    # Index capacity will not grow too large
 
 
     def insert(self, key, value):
@@ -51,7 +52,24 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        # Compute index of key using hash function
+        index = self._hash_mod(key)
+        # If the index is empty, create a new node and add it
+        if self.storage[index] is None:
+            self.storage[index] = LinkedPair(key, value)
+        else:
+            current = self.storage[index]
+            while current is not None:
+                if current.key == key:
+                    current.value = value
+                    break
+                    # A collision occurred, there is a LL of at least one node at this index
+                    # iterate to the end of the list and add a new node there.
+                else:
+                    if current.next is None:
+                        current.next = LinkedPair(key, value)
+                    else:
+                        current = current.next
 
 
 
@@ -63,7 +81,36 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        index = self._hash_mod(key)
+        # Compute hash for the key to determine index
+        current = self.storage[index]
+        # Key not found, return NONE
+        if current == None:
+            return 'No key found.'
+        # If there is only one LinkedPair
+        elif current.next is None and current.key == key:
+            self.storage[index] = None
+        # Otherwise, find the key and remove
+        else:
+            prevNode = None
+            nextNode = current.next
+            while current is not None:
+                if current.key == key:
+                    if prevNode is None:
+                        self.storage[index] = nextNode
+                    else:
+                        if nextNode:
+                            prevNode.next = nextNode
+                        else:
+                            prevNode.next = None
+                    break
+                else:
+                    if current.next is None:
+                        return 'No key found'
+                    else:
+                        prevNode = current
+                        current = current.next
+                        nextNode = current.next
 
 
     def retrieve(self, key):
@@ -74,7 +121,17 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        # Compute the index of provided key using the hash function
+        index = self._hash_mod(key)
+        # Go to the bucket for that index
+        current = self.storage[index]
+        # Return the value of the retrieved node or return NONE
+        while current is not None:
+            if current.key == key:
+                return current.value
+            else:
+                current = current.next
+        return None
 
 
     def resize(self):
@@ -84,7 +141,25 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        # New buckets to maintain time complexity when hash gets full.
+        # Element at [0] remains because we're relying on the KEY in the old array(?)
+        self.capacity *= 2
+        # Temp var NEW STORAGE
+        new_storage = [None] * self.capacity
+        # Iterate over the elements on the old storage and insert them into the new_storage
+        for i in range(len(self.storage)):
+            current = self.storage[i]
+
+            while current is not None:
+                index = self._hash_mod(current.key)
+                if new_storage[index] is None:
+                    new_storage[index] = LinkedPair(current.key, current.value)
+                else:
+                    new_storage[index].next = LinkedPair(
+                        current.key, current.value)
+                current = current.next
+
+        self.storage = new_storage
 
 
 
